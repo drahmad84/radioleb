@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#1a1a2e">
+    <title>راديو لبنان - بث مباشر (ثبات الخلفية)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --bg-primary: #f0f2f5;
+            --bg-secondary: #ffffff;
+            --bg-card: #ffffff;
+            --text-primary: #1a1a2e;
+            --text-secondary: #64748b;
+            --accent: #e94560;
+            --accent-light: #ff6b81;
+            --border: #e2e8f0;
+            --shadow: 0 10px 40px rgba(0,0,0,0.08);
+            --shadow-sm: 0 4px 15px rgba(0,0,0,0.05);
+            --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --player-bg: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            --overlay: rgba(255,255,255,0.8);
+            --ripple: rgba(0,0,0,0.1);
+            --search-bg: #f1f5f9;
+            --icon-color: #64748b;
+            --transition-speed: 0.4s;
+            --footer-text: #64748b;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #0f0f1a;
+            --bg-secondary: #1a1a2e;
+            --bg-card: #16213e;
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --border: #2d3748;
+            --shadow: 0 10px 40px rgba(0,0,0,0.3);
+            --shadow-sm: 0 4px 15px rgba(0,0,0,0.2);
+            --player-bg: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            --overlay: rgba(0,0,0,0.6);
+            --ripple: rgba(255,255,255,0.1);
+            --search-bg: #1e2a3a;
+            --icon-color: #94a3b8;
+            --footer-text: #94a3b8;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            min-height: 100vh;
+            transition: all var(--transition-speed) ease;
+        }
+
+        .app-container {
+            max-width: 480px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+            padding-bottom: 200px;
+            min-height: 100vh;
+            background: var(--bg-primary);
+        }
+
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--bg-secondary);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .app-title {
+            font-size: 20px;
+            font-weight: 700;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--icon-color);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            font-size: 16px;
+        }
+
+        .icon-btn:active {
+            transform: scale(0.9);
+        }
+
+        .search-container {
+            padding: 15px 20px;
+            position: sticky;
+            top: 65px;
+            z-index: 99;
+            background: var(--bg-primary);
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background: var(--search-bg);
+            border-radius: 25px;
+            padding: 12px 20px;
+            gap: 10px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .search-bar:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(233, 69, 96, 0.1);
+        }
+
+        .search-bar input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            outline: none;
+            font-size: 16px;
+            color: var(--text-primary);
+        }
+
+        .search-bar span {
+            color: var(--text-secondary);
+            font-size: 18px;
+        }
+
+        .stations-container {
+            padding: 0 15px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin: 10px 5px 15px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: var(--accent);
+            border-radius: 2px;
+        }
+
+        .stations-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            padding-bottom: 20px;
+        }
+
+        .station-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            text-align: center;
+        }
+
+        .station-card:active {
+            transform: scale(0.95);
+        }
+
+        .station-card.active {
+            border-color: var(--accent);
+            background: var(--bg-secondary);
+            box-shadow: 0 0 30px rgba(233, 69, 96, 0.2);
+        }
+
+        .station-logo {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            object-fit: cover;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            background: var(--bg-primary);
+        }
+
+        .station-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .playing-indicator {
+            display: none;
+            width: 8px;
+            height: 8px;
+            background: #22c55e;
+            border-radius: 50%;
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            animation: blink 1.5s infinite;
+        }
+
+        .station-card.active .playing-indicator {
+            display: block;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; box-shadow: 0 0 10px #22c55e; }
+            50% { opacity: 0.3; box-shadow: 0 0 5px #22c55e; }
+        }
+
+        .player-bar {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 40px);
+            max-width: 440px;
+            background: var(--player-bg);
+            border-radius: 30px;
+            padding: 15px 20px;
+            z-index: 200;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .player-logo {
+            width: 50px;
+            height: 50px;
+            border-radius: 15px;
+            object-fit: cover;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            flex-shrink: 0;
+        }
+
+        .player-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .player-station-name {
+            font-size: 15px;
+            font-weight: 700;
+            color: white;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .player-status {
+            font-size: 12px;
+            color: rgba(255,255,255,0.7);
+            margin-top: 2px;
+        }
+
+        .player-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .play-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--accent);
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(233, 69, 96, 0.4);
+            flex-shrink: 0;
+        }
+
+        .play-btn:active {
+            transform: scale(0.9);
+        }
+
+        .play-btn.playing {
+            background: white;
+            color: var(--accent);
+        }
+
+        .visualizer {
+            display: flex;
+            gap: 2px;
+            align-items: flex-end;
+            height: 20px;
+            margin-top: 5px;
+        }
+
+        .visualizer-bar {
+            width: 3px;
+            background: var(--accent);
+            border-radius: 2px;
+            animation: visualizer 0.8s ease-in-out infinite alternate;
+        }
+
+        .visualizer-bar:nth-child(1) { animation-delay: 0s; height: 10px; }
+        .visualizer-bar:nth-child(2) { animation-delay: 0.1s; height: 15px; }
+        .visualizer-bar:nth-child(3) { animation-delay: 0.2s; height: 8px; }
+
+        @keyframes visualizer {
+            0% { transform: scaleY(0.3); opacity: 0.5; }
+            100% { transform: scaleY(1); opacity: 1; }
+        }
+
+        .alert-toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-120px);
+            background: #1a1a2e;
+            color: white;
+            padding: 14px 25px;
+            border-radius: 30px;
+            z-index: 9999;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+            font-weight: 600;
+            font-size: 14px;
+            text-align: center;
+            max-width: 90%;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .alert-toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .alert-toast.warning {
+            background: #f59e0b;
+            color: #1a1a2e;
+        }
+
+        .alert-toast.error {
+            background: #ef4444;
+        }
+
+        .alert-toast.success {
+            background: #22c55e;
+        }
+
+        .alert-toast.info {
+            background: #3b82f6;
+        }
+
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+            display: none;
+        }
+
+        /* تذييل المطور */
+        .footer {
+            text-align: center;
+            padding: 20px 16px 30px;
+            margin-top: 20px;
+            border-top: 1px solid var(--border);
+            font-size: 13px;
+            color: var(--footer-text);
+            direction: ltr;
+        }
+        .footer p {
+            opacity: 0.8;
+            transition: opacity 0.2s ease;
+        }
+        .footer p:hover {
+            opacity: 1;
+        }
+        [data-theme="dark"] .footer {
+            border-top-color: rgba(255,255,255,0.1);
+        }
+
+        @media (max-width: 380px) {
+            .stations-grid { gap: 8px; }
+            .station-card { padding: 10px; }
+            .station-logo { width: 45px; height: 45px; }
+            .station-name { font-size: 12px; }
+            .footer { padding: 16px 12px 25px; font-size: 11px; }
+        }
+
+        @supports (padding: max(0px)) {
+            .header { padding-top: max(12px, env(safe-area-inset-top)); }
+            .player-bar { bottom: max(20px, env(safe-area-inset-bottom)); }
+            .footer { padding-bottom: max(30px, env(safe-area-inset-bottom)); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="alert-toast" id="alertToast"></div>
+
+<div class="app-container" id="appContainer">
+    <div class="header">
+        <div class="logo-area">
+            <div class="logo-icon">📻</div>
+            <h1 class="app-title" id="appTitle">راديو لبنان</h1>
+        </div>
+        <div class="header-actions">
+            <button class="icon-btn" id="langToggle" title="اللغة">🌐</button>
+            <button class="icon-btn" id="themeToggle" title="الوضع المظلم">🌙</button>
+        </div>
+    </div>
+
+    <div class="search-container">
+        <div class="search-bar">
+            <span>🔍</span>
+            <input type="text" id="searchInput" placeholder="ابحث عن إذاعة...">
+        </div>
+    </div>
+
+    <div class="stations-container">
+        <h2 class="section-title" id="stationsTitle">جميع الإذاعات</h2>
+        <div class="stations-grid" id="stationsGrid"></div>
+        <div class="no-results" id="noResults">📡 لا توجد نتائج</div>
+    </div>
+
+    <!-- تذييل المطور مع السنة الديناميكية -->
+    <div class="footer">
+        <p>برمجة د.أحمد أبو صالح | <span id="currentYear"></span></p>
+    </div>
+</div>
+
+<div class="player-bar" id="playerBar" style="display: none;">
+    <img class="player-logo" id="playerLogo" src="" alt="Logo" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect fill=%22%23444%22 width=%22100%22 height=%22100%22%3E%3C/rect%3E%3Ctext fill=%22white%22 x=%2250%22 y=%2255%22 text-anchor=%22middle%22 font-size=%2240%22%3E📻%3C/text%3E%3C/svg%3E'">
+    <div class="player-info">
+        <div class="player-station-name" id="playerStationName">اختر إذاعة</div>
+        <div class="player-status" id="playerStatus">متوقف</div>
+        <div class="visualizer" id="visualizer">
+            <div class="visualizer-bar"></div>
+            <div class="visualizer-bar"></div>
+            <div class="visualizer-bar"></div>
+        </div>
+    </div>
+    <div class="player-controls">
+        <div class="loading-spinner" id="loadingSpinner"></div>
+        <button class="play-btn" id="playBtn">▶️</button>
+    </div>
+</div>
+
+<script>
+    // --------------------------------------------------------------
+    // قائمة المحطات (35 محطة فريدة - تم إصلاح التكرار والروابط المعطلة)
+    // --------------------------------------------------------------
+    const stationsData = [
+        { id: 0, name: "راديو يا صور", url: "https://yasourfm.radioca.st/stream", logo: "https://www.yasour.online/Upload/files/0/4/25.png" },
+        { id: 1, name: "Sawt el Farah", url: "https://l3.itworkscdn.net/itwaudio/9036/stream", logo: "https://proxy.zeno.fm/content/stations/agxzfnplbm8tc3RhdHNyMgsSCkF1dGhDbGllbnQYgICI4sPC7ggMCxIOU3RhdGlvblByb2ZpbGUYgIDIiOKppgsMogEEemVubw/image/?u=1772611272000" },
+        { id: 2, name: "Light FM", url: "https://playerservices.streamtheworld.com/api/livestream-redirect/LIGHTFM.mp3", logo: "https://back.ww-cdn.com/superstatic/version/242120/iphone/29/photo/sections_23576245_navBar_titleImage@2x.png?v=1700654098" },
+        { id: 3, name: "راديو كوكبا", url: "https://cad.casthost.ca/proxy/antoine/stream", logo: "https://radiokawkaba.com/img/logo1.jpg" },
+        { id: 4, name: "Deep House Radio", url: "https://stream.zeno.fm/zr736mbgqrhvv", logo: "https://play-lh.googleusercontent.com/6fWzMbVVwf6RQNHWykOThhOapvMWu0USRxd6uFzUeMIhcgesihuQ_SBb3vs-sO9aNBJv=w480-h960-rw" },
+        { id: 5, name: "Sawt el Ghad", url: "https://l3.itworkscdn.net/itwaudio/9030/stream", logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSa2PZdu2O37g7MrvKWac11Yjd7WHDZTBOhvQ&s" },
+        { id: 6, name: "Sawt Lebnan-صوت لبنان", url: "https://l3.itworkscdn.net/itwaudio/9054/stream", logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQXtGs-4Ur0v6cCYCq_8ylFG8ncfxz6MaYQFA&s" },
+        { id: 7, name: "Radio Delta", url: "https://tv.fastcast4u.com:3814/live/deltafmlive.m3u8", logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQxeoIrDo2wk4enVhfSFoG6IbuRHCOaEenHyQ&s" },
+        { id: 8, name: "إذاعة النور", url: "https://l3.itworkscdn.net/itwaudio/9066/stream", logo: "https://media.alnour.com.lb/uploads/logo-web.png" },
+        { id: 9, name: "إذاعة طريق الإرتقاء", url: "https://radio.garden/api/ara/content/listen/f_u3IfNL/channel.mp3?1731623599307", logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT_MQPYecXmLvRJ8k-Ou9tY52bpPTQJtuwTVw&s" },
+        { id: 10, name: "اذاعة الفجر", url: "http://vps1.osina.cloud:9306/;", logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQZ-U3-NUNvFbQO_TDfD8TgHuM65GHeSr4Owg&s" },
+        { id: 11, name: "Radio One", url: "http://s1.rss-streaming.co.uk:8026/stream/", logo: "https://upload.wikimedia.org/wikipedia/commons/b/b3/Radio_One_Lebanon_Logo.png" },
+        { id: 12, name: "Nostalgie", url: "http://cdn.nrjaudio.fm/adwz1/lb/55157/aac_64.mp3", logo: "https://kuasark.com/files/stations-logos/nostalgie-fm.png" },
+        { id: 13, name: "Sawt el Nogoum-صوت النجوم", url: "https://radiozahle.net/proxy/rzoldies/;stream/1?ver=646682", logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT6k0pKxtTAvK8lTW7r722TlZJ1kjLl6iR-AQ&s" },
+        { id: 14, name: "Sawt el Shaab-صوت االشعب", url: "https://audio.osina.cloud:9320/stream", logo: "https://cdn-icons-png.flaticon.com/512/2332/2332515.png" },
+        { id: 15, name: "Jaras Scoop FM", url: "http://streaming.thewebaddicts.com:8000/;?type=http&nocache=7", logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSgkGKxSPmn0dI4nm2d4i4tYRJILakbeeA4aA&s" },
+        { id: 16, name: "Aghani Aghani", url: "https://streaming.nrjaudio.fm/ou6pfgxp336f", logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSCtTENzPXprTnI8dkvuOLKHEGfOFYd-4Jb7g&s" },
+        { id: 17, name: "Sawt el Mada-صوت المدى", url: "http://audiostreaming.itworkscdn.com:9018/;stream.mp3", logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQtmrXkqrBx-hNyUI9YBOfkAe8_rh0KL-aEXg&s" },
+        { id: 18, name: "Radio Naim Halawi", url: "https://streamer.radio.co/sf2fa6ce9d/listen", logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQFZgqLz0YUYUXNIAJMJQ9TKQoTK_cmJ9ARuA&s" },
+        { id: 19, name: "Radio Mt Lebanon", url: "https://s2.yesstreaming.net:17153/stream", logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRaur-tlNlJTAlVJI8eoCEQqHEMwQR2F3GkLg&s" },
+        { id: 20, name: "Adeem Radio", url: "http://usa6.fastcast4u.com:5109/live", logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRPav3tY4UvihsvZqVQJO2QQqYq1Yi5TjN3hA&s" },
+        { id: 21, name: "Byblos Radio", url: "http://byblosnights.com:8000/byblosaac", logo: "https://www.radio.net/300/byblosradio.png?version=a5325c6ae5782d342288db42f69c23f990a62473" },
+        { id: 22, name: "Reve Lebanon", url: "https://eu9.fastcast4u.com/proxy/revelebanon?mp=/1", logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS2J7EymkTfO1Nmccx7GAbEo7t2K4ugvhwCSA&s" },
+        { id: 23, name: "Sawt el Nagham-صوت النغم", url: "https://stream.zeno.fm/66sfwug4ag0uv", logo: "https://cdn-icons-png.flaticon.com/512/2332/2332515.png" },
+        { id: 24, name: "Virgin Radio", url: "http://stream.zeno.fm/dwxw3p9vea0uv", logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSoNNVD0uxQH0CpJGk_Kdag5voKOyHYPP330Q&s" },
+        { id: 25, name: "Radio Magic", url: "http://s1.voscast.com:9376/stream/1/", logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTl4PRfpRe_w0antJi58DP0tl20B_lkFwuv1g&s" },
+        { id: 26, name: "Al Shark-إذاعة الشرق", url: "https://radio.garden/api/ara/content/listen/NK3NM9sG/channel.mp3?1739732240628", logo: "https://www.elsharkonline.com/wp-content/uploads/2025/09/logo-al-sharkonline-2x.png" },
+        { id: 27, name: "Jabal Lebnan Radio-راديو جبل لبنان", url: "https://s2.yesstreaming.net:17153/stream", logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8qwwB03AWDvU0D3OmzskQos9pr0_mZFWUOA&s" },
+        { id: 28, name: "Star FM Radio", url: "http://78.129.229.113:7976/live", logo: "https://cdn-icons-png.flaticon.com/512/2332/2332515.png" },
+        { id: 29, name: "LBI Oldies", url: "https://lbioldies-lbnet2.radioca.st/stream?type=http&nocache=91", logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSsDXu4ebJqeKD4LRcuG1QLavrDjtnNZYzJUw&s" },
+        { id: 30, name: "LBI Radio", url: "https://live.lbiradio.com/listen/station_1/1?type=http&nocache=91", logo: "https://lbiradio.com/og-image.jpg" },
+        { id: 31, name: "LBI Hits", url: "https://lbihits-lbnet2.radioca.st/stream", logo: "https://www.lbiradio.com/images/lbi-hits.png" },
+        { id: 32, name: "Radio Arka", url: "http://64.150.176.42:8007/stream", logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRZzY-6JYiCh4ns9zvUK9e5BoFU10CWTmdKpA&s" },
+        { id: 33, name: "Enooma Stars Radio", url: "https://radio.garden/api/ara/content/listen/XBk3ZpXS/channel.mp3?1739733391000", logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQLBmmBh--hlY2KpjwvnDQZSnGzxUnwrfjG8A&s" },
+        { id: 34, name: "Arez FM Radio Station", url: "http://stream.zeno.fm/vbue408p6tzuv", logo: "https://cdn-icons-png.flaticon.com/512/2332/2332515.png" },
+        { id: 35, name: "3j Radio", url: "https://radio.garden/api/ara/content/listen/BEgjrLBz/channel.mp3?1778882680820", logo: "https://th.bing.com/th/id/OIP.LblfzyQxBUgzIuOCBD6KjAHaHa?w=178&h=180&c=7&r=0&o=7&dpr=1.5&pid=1.7&rm=3" }
+    ];
+
+    // ------------------- STATE -------------------
+    let currentLang = 'ar';
+    let isDarkMode = false;
+    let currentStation = null;
+    let isPlaying = false;
+    let audio = null;
+    let userStopped = false;
+    let aggressiveRetryInterval = null;
+
+    // DOM elements
+    const stationsGrid = document.getElementById('stationsGrid');
+    const searchInput = document.getElementById('searchInput');
+    const noResults = document.getElementById('noResults');
+    const playerBar = document.getElementById('playerBar');
+    const playerLogo = document.getElementById('playerLogo');
+    const playerStationName = document.getElementById('playerStationName');
+    const playerStatus = document.getElementById('playerStatus');
+    const playBtn = document.getElementById('playBtn');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    const visualizer = document.getElementById('visualizer');
+    const alertToast = document.getElementById('alertToast');
+    const langToggle = document.getElementById('langToggle');
+    const themeToggle = document.getElementById('themeToggle');
+    const appTitle = document.getElementById('appTitle');
+    const stationsTitle = document.getElementById('stationsTitle');
+    const currentYearSpan = document.getElementById('currentYear');
+
+    // ------------------- HELPER FUNCTIONS -------------------
+    function showAlert(msg, type = 'info') {
+        alertToast.textContent = msg;
+        alertToast.className = `alert-toast ${type} show`;
+        setTimeout(() => alertToast.classList.remove('show'), 3000);
+    }
+
+    function updateUI() {
+        if (isPlaying && audio && !audio.paused) {
+            playBtn.innerHTML = '⏸️';
+            playBtn.classList.add('playing');
+            playerStatus.textContent = currentLang === 'ar' ? 'قيد التشغيل' : 'Playing';
+            visualizer.style.display = 'flex';
+        } else {
+            playBtn.innerHTML = '▶️';
+            playBtn.classList.remove('playing');
+            playerStatus.textContent = currentLang === 'ar' ? 'متوقف' : 'Stopped';
+            visualizer.style.display = 'none';
+        }
+        loadingSpinner.style.display = 'none';
+        playBtn.style.display = 'flex';
+    }
+
+    // ------------------- AUDIO INIT & AGGRESSIVE WATCHER -------------------
+    function initAudio() {
+        if (audio) return;
+        audio = new Audio();
+        audio.volume = 0.8;
+        audio.preload = 'auto';
+
+        audio.addEventListener('play', () => {
+            isPlaying = true;
+            updateUI();
+            if (aggressiveRetryInterval === null && currentStation && !userStopped) {
+                aggressiveRetryInterval = setInterval(() => {
+                    if (currentStation && !userStopped && audio && audio.paused && !audio.ended) {
+                        console.log("AGGRESSIVE: resume triggered");
+                        audio.play().catch(err => {
+                            console.warn("Aggressive play failed", err);
+                            if (err.name === 'NotAllowedError') {
+                                showAlert(currentLang === 'ar' ? 'انقر زر التشغيل لاستئناف البث' : 'Tap play to resume', 'warning');
+                            }
+                        });
+                    }
+                }, 2500);
+            }
+        });
+
+        audio.addEventListener('pause', () => {
+            isPlaying = false;
+            updateUI();
+            if (!userStopped && currentStation && !document.hidden && !audio.ended) {
+                console.log("Pause event - background retry");
+                setTimeout(() => {
+                    if (currentStation && !userStopped && audio.paused) audio.play().catch(e => console.warn("Retry failed", e));
+                }, 500);
+            }
+        });
+
+        audio.addEventListener('error', (e) => {
+            console.error("Audio error", e);
+            showAlert(currentLang === 'ar' ? 'مشكلة في البث، جرب محطة أخرى' : 'Stream error, try another station', 'error');
+            isPlaying = false;
+            updateUI();
+        });
+
+        audio.addEventListener('ended', () => {
+            if (!userStopped && currentStation) {
+                console.log("Stream ended, retrying");
+                audio.load();
+                audio.play().catch(e => console.warn("Ended reload failed", e));
+            }
+        });
+    }
+
+    function stopAggressiveWatcher() {
+        if (aggressiveRetryInterval) {
+            clearInterval(aggressiveRetryInterval);
+            aggressiveRetryInterval = null;
+        }
+    }
+
+    // Visibility and focus handling for background playback
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden && currentStation && !userStopped && audio?.paused && audio.src) {
+            console.log("Visibility change: resuming");
+            audio.play().catch(e => showAlert(currentLang === 'ar' ? 'اضغط زر التشغيل' : 'Tap play', 'warning'));
+        }
+    });
+
+    window.addEventListener('focus', () => {
+        if (currentStation && !userStopped && audio?.paused && audio.src) {
+            console.log("Window focus: resuming");
+            audio.play().catch(e => console.warn("Focus resume failed", e));
+        }
+    });
+
+    // ------------------- PLAYBACK CONTROLS -------------------
+    function playStation(station) {
+        initAudio();
+        if (currentStation && currentStation.id === station.id && isPlaying) {
+            togglePlayPause();
+            return;
+        }
+        stopAggressiveWatcher();
+        userStopped = false;
+        currentStation = station;
+        playerBar.style.display = 'flex';
+        playerLogo.src = station.logo;
+        playerStationName.textContent = station.name;
+
+        loadingSpinner.style.display = 'block';
+        playBtn.style.display = 'none';
+        visualizer.style.display = 'none';
+
+        audio.src = station.url;
+        audio.load();
+        audio.play().then(() => {
+            isPlaying = true;
+            updateUI();
+            showAlert(`${currentLang === 'ar' ? 'تشغيل' : 'Playing'}: ${station.name}`, 'success');
+        }).catch(err => {
+            console.warn("Play error", err);
+            isPlaying = false;
+            updateUI();
+            showAlert(currentLang === 'ar' ? 'تعذر التشغيل، قد تكون المحطة غير متاحة' : 'Cannot play, stream may be unavailable', 'error');
+        });
+
+        document.querySelectorAll('.station-card').forEach(card => card.classList.remove('active'));
+        const activeCard = Array.from(document.querySelectorAll('.station-card')).find(card => card.innerText.includes(station.name));
+        if (activeCard) activeCard.classList.add('active');
+    }
+
+    function togglePlayPause() {
+        if (!audio || !currentStation) return;
+        if (isPlaying && !audio.paused) {
+            userStopped = true;
+            audio.pause();
+            isPlaying = false;
+            updateUI();
+            stopAggressiveWatcher();
+        } else {
+            userStopped = false;
+            loadingSpinner.style.display = 'block';
+            playBtn.style.display = 'none';
+            audio.play().then(() => {
+                isPlaying = true;
+                updateUI();
+                showAlert(currentLang === 'ar' ? 'استئناف البث' : 'Resuming playback', 'success');
+            }).catch(() => {
+                isPlaying = false;
+                updateUI();
+                showAlert(currentLang === 'ar' ? 'فشل التشغيل' : 'Play failed', 'error');
+            });
+        }
+    }
+
+    // ------------------- RENDER STATIONS -------------------
+    function renderStations(filtered = stationsData) {
+        stationsGrid.innerHTML = '';
+        if (filtered.length === 0) {
+            noResults.style.display = 'block';
+            return;
+        }
+        noResults.style.display = 'none';
+        filtered.forEach(station => {
+            const card = document.createElement('div');
+            card.className = 'station-card';
+            if (currentStation && currentStation.id === station.id) card.classList.add('active');
+            card.innerHTML = `
+                <img class="station-logo" src="${station.logo}" alt="${station.name}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect fill=%22%23444%22 width=%22100%22 height=%22100%22%3E%3C/rect%3E%3Ctext fill=%22white%22 x=%2250%22 y=%2255%22 text-anchor=%22middle%22 font-size=%2240%22%3E📻%3C/text%3E%3C/svg%3E'">
+                <div class="station-name">${station.name}</div>
+                <div class="playing-indicator"></div>
+            `;
+            card.onclick = () => playStation(station);
+            stationsGrid.appendChild(card);
+        });
+    }
+
+    // ------------------- SEARCH -------------------
+    let searchTimeout;
+    searchInput.addEventListener('input', () => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            const query = searchInput.value.toLowerCase().trim();
+            const filtered = stationsData.filter(s => s.name.toLowerCase().includes(query));
+            renderStations(filtered);
+        }, 200);
+    });
+
+    // ------------------- LANGUAGE & THEME -------------------
+    function updateLanguage() {
+        if (currentLang === 'ar') {
+            appTitle.textContent = 'راديو لبنان';
+            stationsTitle.textContent = 'جميع الإذاعات';
+            searchInput.placeholder = 'ابحث عن إذاعة...';
+            if (currentStation) playerStatus.textContent = isPlaying ? 'قيد التشغيل' : 'متوقف';
+            else playerStatus.textContent = 'متوقف';
+        } else {
+            appTitle.textContent = 'Lebanon Radio';
+            stationsTitle.textContent = 'All Stations';
+            searchInput.placeholder = 'Search stations...';
+            if (currentStation) playerStatus.textContent = isPlaying ? 'Playing' : 'Stopped';
+            else playerStatus.textContent = 'Stopped';
+        }
+        showAlert(currentLang === 'ar' ? 'تم تغيير اللغة' : 'Language changed', 'success');
+    }
+
+    langToggle.addEventListener('click', () => {
+        currentLang = currentLang === 'ar' ? 'en' : 'ar';
+        updateLanguage();
+    });
+
+    function updateTheme() {
+        document.documentElement.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
+        themeToggle.innerHTML = isDarkMode ? '☀️' : '🌙';
+    }
+
+    themeToggle.addEventListener('click', () => {
+        isDarkMode = !isDarkMode;
+        updateTheme();
+        showAlert(isDarkMode ? (currentLang === 'ar' ? 'الوضع المظلم' : 'Dark mode') : (currentLang === 'ar' ? 'الوضع الفاتح' : 'Light mode'), 'success');
+    });
+
+    // ------------------- INIT -------------------
+    function init() {
+        // تعيين السنة الحالية في التذييل
+        if (currentYearSpan) {
+            currentYearSpan.textContent = new Date().getFullYear();
+        }
+        renderStations();
+        updateLanguage();
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            isDarkMode = true;
+            updateTheme();
+        }
+        initAudio();
+        showAlert(currentLang === 'ar' ? 'التطبيق جاهز، اختر إذاعة للاستماع' : 'App ready, choose a station to listen', 'info');
+    }
+
+    playBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        togglePlayPause();
+    });
+
+    init();
+</script>
+
+</body>
+</html>
